@@ -1,0 +1,15 @@
+{
+  "name": "mise-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "build": "node --check server.mjs && node --check public/app.js && node --check public/storage.js && node --check public/timeline-model.js",
+    "test": "node test.mjs && node infrastructure.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
