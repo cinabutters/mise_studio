@@ -42,13 +42,23 @@ Timeline tests exercise scheduling, stacking, service markers, visibility, zoom,
 
 ## Runtime and maintenance
 
-The app remains a local-first, single-device application. There is no account system, database, or cloud backup. The production hardening here does not change that model. For public deployment, terminate HTTPS at a reverse proxy, run Node under a process supervisor, and set HOST and PORT explicitly; localhost:8000 remains the default. Browser storage is isolated by origin, so changing the hostname, port, or protocol does not migrate existing projects.
+The app remains a local-first, single-device application. There is no account system, database, or cloud backup. The production hardening here does not change that model. For GitHub Pages, publish the static public folder as described below. If you choose Node hosting instead, terminate HTTPS at a reverse proxy, run Node under a process supervisor, and set HOST and PORT explicitly; localhost:8000 remains the default. Browser storage is isolated by origin, so changing the hostname, port, or protocol does not migrate existing projects.
 
 The server serves only allowlisted assets and application routes, accepts GET and HEAD, supports gzip and conditional ETag responses, bounds HTTP timeouts, and sets content-security and framing headers. Asset files are refreshed when their modification time or size changes. No runtime packages are required. Fonts continue to load from Google Fonts with the existing local fallbacks.
 
-Saved data is validated before rendering. If stored data is malformed or unreadable, it is preserved and writes are blocked. A stale tab cannot overwrite changes saved by a newer tab; retain any unsaved text before reloading it. Ordinary edits retain immediate local persistence. Do not clear browser storage to troubleshoot without first backing it up through browser tools.
+Saved data is validated before rendering. If stored data is malformed or unreadable, it is preserved and writes are blocked. A stale tab cannot overwrite changes saved by a newer tab; retain any unsaved text before reloading it. Ordinary edits retain immediate local persistence. Use Export workspace before clearing browser storage. If data cannot be loaded, preserve the original browser storage through browser tools before attempting recovery.
 
 Source layout: public/app.js contains UI workflows; public/storage.js owns saved-data validation and legacy migration; public/timeline-model.js contains pure scheduling calculations; public/style.css contains presentation; server.mjs is the static HTTP server. test.mjs covers user workflows, and infrastructure.test.mjs covers storage and HTTP contracts. Obsolete search/import clients, research downloads, and unused styles have been removed.
 
 Formatting: pnpm dlx prettier@3.6.2 --write public/*.js public/style.css server.mjs *.test.mjs test.mjs. The formatter is a development tool, not an application dependency. npm run build checks JavaScript syntax. Automated tests exercise DOM handlers and HTTP responses; they are not a browser visual regression suite.
 
+
+## Static hosting and backups
+
+Mise Studio is ready to serve directly from `public/`; no production Node server or API keys are required. Routes use URL fragments, for example `/mise_studio/#/recipes` and `/mise_studio/#/project/ID`, so reloads and deep links work on GitHub Pages under a repository prefix. Relative asset URLs support both a repository site and a custom domain. The local Node server redirects old `/recipes`, `/project/ID`, and recipe editor bookmarks to the new hash URLs.
+
+Export workspace and Import workspace are available below the projects and saved-recipes lists. Export downloads a versioned JSON backup containing all projects, saved recipes, drafts, ingredient edits, and timeline settings. Import validates the file, shows record counts, and asks before replacing the entire workspace; it does not merge libraries. Invalid files, unsupported backup versions, canceled imports, changed storage in another tab, and failed writes do not replace the current workspace. Keep a backup before restoring another file.
+
+To move from localhost to a published site: export here, open the published site, then import that file there. Data remains browser-local; publishing does not upload your library, and a project URL does not share its contents with another device. A new hostname or protocol has separate storage. Normal redeployments at the same origin retain browser data.
+
+For the publishing walkthrough, use GitHub Actions to upload the contents of `public/` as the Pages artifact. `npm run build` is a syntax check, not a command that creates `dist/`. Run `npm test` before publishing. Deployment and GitHub configuration have not been added yet. The Node server's HTTP headers apply to local/server hosting only, not GitHub Pages.
